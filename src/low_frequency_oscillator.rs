@@ -1,14 +1,15 @@
 use crate::basic::{ModulationComponent, ModulatorId, Parameter};
+use crate::engine::{ModulationRate, ModulationSampleIndex};
 
 pub struct LowFrequencyOscillator {
     pub id: Option<ModulatorId>,
     pub frequency: Parameter,
     pub current_level: f32,
-    sample_rate: u32,
+    sample_rate: ModulationRate,
 }
 
 impl LowFrequencyOscillator {
-    pub fn new(frequency: f32, sample_rate: u32) -> Self {
+    pub fn new(frequency: f32, sample_rate: ModulationRate) -> Self {
         Self {
             id: None,
             frequency: Parameter::new(frequency, 0.0, 300.0),
@@ -19,9 +20,9 @@ impl LowFrequencyOscillator {
 }
 
 impl ModulationComponent for LowFrequencyOscillator {
-    fn process_modulation(&mut self, sample: u64) {
+    fn process_modulation(&mut self, sample: ModulationSampleIndex) {
         let omega = 2.0 * std::f32::consts::PI * self.frequency.value;
-        let t = (sample % self.sample_rate as u64) as f32 / self.sample_rate as f32;
+        let t = (sample.0 % self.sample_rate.0 as u64) as f32 / self.sample_rate.0 as f32;
         self.current_level = (t * omega).sin();
     }
 

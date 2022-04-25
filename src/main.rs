@@ -1,7 +1,7 @@
 use anyhow::Result;
 use rynth::app::configure_device;
 use rynth::audio_loop::audio_loop;
-use rynth::engine::{empty_engine, AudioTopology, Engine};
+use rynth::engine::{empty_engine, AudioTopology, Channels, Engine, ModulationRate, SamplingRate};
 
 use rynth::low_frequency_oscillator::LowFrequencyOscillator;
 use rynth::oscillator::Oscillator;
@@ -10,11 +10,10 @@ use std::thread;
 use std::time::Duration;
 
 fn create_testing_engine() -> Result<(Engine, AudioTopology)> {
-    let sampling_rate = 48000;
-    let modulation_rate = 100;
-    let modulation_interval = sampling_rate / modulation_rate;
+    let sampling_rate = SamplingRate(48000);
+    let modulation_rate = ModulationRate(100);
 
-    let (engine, mut topology) = empty_engine(sampling_rate, modulation_interval, 2);
+    let (engine, mut topology) = empty_engine(sampling_rate, modulation_rate, Channels(2));
 
     let modulator_id = topology.add_modulator(LowFrequencyOscillator::new(2.0, modulation_rate));
 

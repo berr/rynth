@@ -1,5 +1,5 @@
 use anyhow::Result;
-use rynth::engine::{empty_engine, AudioTopology, Engine};
+use rynth::engine::{empty_engine, AudioTopology, Channels, Engine, ModulationRate, SamplingRate};
 use rynth::low_frequency_oscillator::LowFrequencyOscillator;
 use rynth::oscillator::Oscillator;
 use std::time::Duration;
@@ -12,13 +12,13 @@ fn save_engine_result(
 ) -> Result<()> {
     let samples_per_call = 512;
     let channels = engine.channels;
-    let sample_rate = engine.sampling_rate;
-    let test_samples = (duration.as_secs_f32() * sample_rate as f32) as usize;
-    let mut buffer = vec![0.0; samples_per_call * channels as usize];
+    let sampling_rate = engine.sampling_rate;
+    let test_samples = (duration.as_secs_f32() * sampling_rate.0 as f32) as usize;
+    let mut buffer = vec![0.0; samples_per_call * channels.0 as usize];
 
     let spec = hound::WavSpec {
-        channels,
-        sample_rate,
+        channels: channels.0,
+        sample_rate: sampling_rate.0,
         bits_per_sample: 32,
         sample_format: hound::SampleFormat::Float,
     };
@@ -27,7 +27,7 @@ fn save_engine_result(
     let mut current_sample = 0;
     while current_sample < test_samples {
         let samples_in_loop = samples_per_call.min(test_samples - current_sample);
-        let samples_in_buffer = samples_in_loop * channels as usize;
+        let samples_in_buffer = samples_in_loop * channels.0 as usize;
         let buffer_slice = &mut buffer.as_mut_slice()[0..samples_in_buffer];
 
         engine.advance(topology, buffer_slice);
@@ -42,17 +42,16 @@ fn save_engine_result(
 }
 
 fn create_testing_engine() -> (Engine, AudioTopology) {
-    let sampling_rate = 48000;
-    let modulation_rate = 100;
-    let modulation_interval = sampling_rate / modulation_rate;
+    let sampling_rate = SamplingRate(48000);
+    let modulation_rate = ModulationRate(100);
 
-    let (engine, mut topology) = empty_engine(sampling_rate, modulation_interval, 2);
+    let (engine, mut topology) = empty_engine(sampling_rate, modulation_rate, Channels(2));
 
     let modulator_id = topology.add_modulator(LowFrequencyOscillator::new(2.0, modulation_rate));
 
     let mut oscillator = Oscillator::new(200.0, sampling_rate);
-    oscillator.level.value = 0.5;
-    oscillator.level.add_modulation(modulator_id, 0.4);
+    oscillator.level.value = 0.4;
+    oscillator.level.add_modulation(modulator_id, 0.5);
 
     // oscillator.frequency.add_modulation(modulator_id, 0.002);
 
