@@ -15,7 +15,7 @@ pub fn audio_loop(mut engine: Engine, device: cpal::Device, receiver: CommandRec
 {
     let config = cpal::StreamConfig{
         channels: engine.channels,
-        sample_rate: cpal::SampleRate(engine.sample_rate),
+        sample_rate: cpal::SampleRate(engine.sampling_rate),
         buffer_size: cpal::BufferSize::Fixed(128)
     };
 
@@ -23,7 +23,7 @@ pub fn audio_loop(mut engine: Engine, device: cpal::Device, receiver: CommandRec
     let stream = device.build_output_stream(
         &config,
         move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-            engine.process_audio(data);
+            engine.advance(data);
         },
         err_fn,
     )?;

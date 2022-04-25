@@ -6,20 +6,23 @@ use anyhow::Result;
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::Duration;
-use rynth::basic::AudioComponent;
+use rynth::basic::{AudioComponent, AudioComponentId};
 use rynth::oscillator::Oscillator;
 
 
 fn create_testing_engine() -> Result<Engine> {
-    let sample_rate = 48000;
+    let sampling_rate = 48000;
+    let modulation_rate = sampling_rate / 100;
 
-    let sine_oscillator: Box<dyn AudioComponent + Send + 'static> = Box::new(Oscillator::new(200.0, sample_rate));
+    let sine_oscillator = Oscillator::new(AudioComponentId(0), 200.0, sampling_rate);
+    let sine_oscillator: Box<dyn AudioComponent + Send + 'static> = Box::new(sine_oscillator);
     let components = vec![sine_oscillator];
     let modulators = vec![];
 
 
     let engine = Engine::new(
-        sample_rate,
+        sampling_rate,
+        modulation_rate,
         2,
         components,
         modulators,

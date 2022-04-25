@@ -1,10 +1,22 @@
 use std::ops::Range;
 
+#[derive(Copy, Clone)]
+pub struct AudioComponentId(pub usize);
+
+#[derive(Copy, Clone)]
+pub struct ModulationId(pub usize);
+
+
 pub trait AudioComponent {
     fn process_audio(&mut self, data: &mut [f32], sample_range: Range<u64>);
+    fn id(&self) -> AudioComponentId;
 }
 
-pub struct ModulationId(usize);
+pub trait ModulationComponent {
+    fn process_modulation(&mut self, sample: u64);
+    fn id(&self) -> ModulationId;
+}
+
 
 pub struct Modulation {
     id: ModulationId,
