@@ -69,10 +69,7 @@ impl Engine {
         let channels = self.channels as usize;
         let total_samples = audio.len() / channels;
         let start_sample = self.current_audio_sample;
-        let end_sample = start_sample + total_samples as u64;
         assert_eq!(total_samples * channels, audio.len());
-
-        println!("Advancing from {} to {}", start_sample, end_sample);
 
         if self.current_audio_sample == 0 {
             self.process_modulation(topology);
@@ -104,9 +101,12 @@ impl Engine {
     }
 
     fn process_modulation(&mut self, topology: &mut AudioTopology) {
-        println!("Processing modulation");
         for m in &mut topology.modulators {
             m.process_modulation(self.current_modulation_sample);
+        }
+
+        for c in &mut topology.components {
+            c.apply_modulations(topology.modulators.as_slice());
         }
 
         self.last_audio_sample_with_modulation = self.current_audio_sample;
@@ -118,7 +118,6 @@ impl Engine {
             return;
         }
 
-        println!("Processing audio");
         let start_sample = self.current_audio_sample;
         let end_sample = start_sample + total_samples as u64;
 

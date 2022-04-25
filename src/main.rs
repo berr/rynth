@@ -6,6 +6,7 @@ use anyhow::Result;
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::Duration;
+use rynth::low_frequency_oscillator::LowFrequencyOscillator;
 use rynth::oscillator::Oscillator;
 
 
@@ -14,7 +15,18 @@ fn create_testing_engine() -> Result<(Engine, AudioTopology)> {
     let modulation_rate = sampling_rate / 100;
 
     let (engine, mut topology) = empty_engine(sampling_rate, modulation_rate, 2);
-    topology.add_component(Oscillator::new(200.0, sampling_rate));
+
+    let modulator_id = topology.add_modulator(
+        LowFrequencyOscillator::new(5.0, modulation_rate)
+    );
+
+    let mut oscillator = Oscillator::new(200.0, sampling_rate);
+    oscillator.level.value = 0.4;
+    // oscillator.level.add_modulation(modulator_id, 0.5);
+
+    oscillator.frequency.add_modulation(modulator_id, 0.002);
+
+    topology.add_component(oscillator);
 
     Ok((engine, topology))
 }
