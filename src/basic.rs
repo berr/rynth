@@ -1,20 +1,26 @@
+use std::num::NonZeroUsize;
 use std::ops::Range;
 
 #[derive(Copy, Clone)]
-pub struct AudioComponentId(pub usize);
+pub struct AudioComponentId(pub NonZeroUsize);
 
 #[derive(Copy, Clone)]
-pub struct ModulationId(pub usize);
+pub struct ModulatorId(pub NonZeroUsize);
+
+#[derive(Copy, Clone)]
+pub struct ModulationId(pub NonZeroUsize);
 
 
 pub trait AudioComponent {
     fn process_audio(&mut self, data: &mut [f32], sample_range: Range<u64>);
-    fn id(&self) -> AudioComponentId;
+    fn id(&self) -> Option<AudioComponentId>;
+    fn change_id(&mut self, new_id: AudioComponentId);
 }
 
 pub trait ModulationComponent {
     fn process_modulation(&mut self, sample: u64);
-    fn id(&self) -> ModulationId;
+    fn id(&self) -> Option<ModulatorId>;
+    fn change_id(&mut self, new_id: ModulatorId);
 }
 
 

@@ -1,10 +1,9 @@
 use std::time::Duration;
 use anyhow::Result;
-use rynth::basic::{AudioComponent, AudioComponentId};
-use rynth::engine::Engine;
+use rynth::engine::{AudioTopology, empty_engine, Engine};
 use rynth::oscillator::Oscillator;
 
-fn save_engine_result(engine: &mut Engine, duration: Duration, path: &str) -> Result<()> {
+fn save_engine_result(engine: &mut Engine, topology: &mut AudioTopology, duration: Duration, path: &str) -> Result<()> {
     let samples_per_call = 512;
     let channels = engine.channels;
     let sample_rate = engine.sampling_rate;
@@ -25,7 +24,7 @@ fn save_engine_result(engine: &mut Engine, duration: Duration, path: &str) -> Re
         let samples_in_buffer = samples_in_loop * channels as usize;
         let buffer_slice = &mut buffer.as_mut_slice()[0..samples_in_buffer];
 
-        engine.advance(buffer_slice);
+        engine.advance(topology, buffer_slice);
         for s in buffer_slice.iter() {
             writer.write_sample(*s)?;
         }
@@ -36,31 +35,20 @@ fn save_engine_result(engine: &mut Engine, duration: Duration, path: &str) -> Re
     Ok(())
 }
 
-fn create_testing_engine() -> Result<Engine> {
+fn create_testing_engine() -> Result<(Engine, AudioTopology)> {
     let sampling_rate = 48000;
     let modulation_rate = sampling_rate / 100;
 
-    let sine_oscillator = Oscillator::new(AudioComponentId(0), 440.0, sampling_rate);
-    let sine_oscillator: Box<dyn AudioComponent + Send + 'static> = Box::new(sine_oscillator);
-    let components = vec![sine_oscillator];
-    let modulators = vec![];
+    let (engine, mut topology) = empty_engine(sampling_rate, modulation_rate, 2);
+    topology.add_component(Oscillator::new(200.0, sampling_rate));
 
-
-    let engine = Engine::new(
-        sampling_rate,
-        modulation_rate,
-        2,
-        components,
-        modulators,
-    );
-
-    Ok(engine)
+    Ok((engine, topology))
 }
 
 #[test]
 fn sine_wave() -> Result<()> {
-    let mut engine = create_testing_engine()?;
-    save_engine_result(&mut engine, Duration::from_millis(100), "sine.wav")?;
+    let (mut engine, mut topology) = create_testing_engine()?;
+    save_engine_result(&mut engine, &mut topology, Duration::from_millis(100), "sine.wav")?;
 
     Ok(())
 }

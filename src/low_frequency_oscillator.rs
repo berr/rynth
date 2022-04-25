@@ -1,7 +1,7 @@
-use crate::basic::{ModulationComponent, AudioComponentId, Parameter, ModulationId};
+use crate::basic::{ModulationComponent, Parameter, ModulatorId};
 
 pub struct LowFrequencyOscillator {
-    pub id: ModulationId,
+    pub id: Option<ModulatorId>,
     pub frequency: Parameter,
     pub current_level: f32,
     sample_rate: u32,
@@ -9,9 +9,9 @@ pub struct LowFrequencyOscillator {
 
 impl LowFrequencyOscillator {
 
-    pub fn new(id: ModulationId, frequency: f32, sample_rate: u32) -> Self {
+    pub fn new(frequency: f32, sample_rate: u32) -> Self {
         Self {
-            id,
+            id: None,
             frequency: Parameter::new(frequency),
             sample_rate,
             current_level: 0.0,
@@ -27,7 +27,11 @@ impl ModulationComponent for LowFrequencyOscillator {
         self.current_level = (t * omega).sin();
     }
 
-    fn id(&self) -> ModulationId {
+    fn id(&self) -> Option<ModulatorId> {
         self.id
+    }
+
+    fn change_id(&mut self, new_id: ModulatorId) {
+        self.id = Some(new_id);
     }
 }

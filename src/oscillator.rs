@@ -2,16 +2,16 @@ use std::ops::Range;
 use crate::basic::{AudioComponent, AudioComponentId, Parameter};
 
 pub struct Oscillator {
-    pub id: AudioComponentId,
+    pub id: Option<AudioComponentId>,
     pub frequency: Parameter,
     sample_rate: u32,
 }
 
 impl Oscillator {
 
-    pub fn new(id: AudioComponentId, frequency: f32, sample_rate: u32) -> Self {
+    pub fn new(frequency: f32, sample_rate: u32) -> Self {
         Self {
-            id,
+            id: None,
             frequency: Parameter::new(frequency),
             sample_rate,
         }
@@ -36,7 +36,11 @@ impl AudioComponent for Oscillator {
         }
     }
 
-    fn id(&self) -> AudioComponentId {
+    fn id(&self) -> Option<AudioComponentId> {
         self.id
+    }
+
+    fn change_id(&mut self, new_id: AudioComponentId) {
+        self.id = Some(new_id);
     }
 }
