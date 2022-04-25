@@ -1,14 +1,13 @@
+use anyhow::Result;
 use rynth::app::configure_device;
 use rynth::audio_loop::audio_loop;
-use rynth::engine::{AudioTopology, empty_engine, Engine};
-use anyhow::Result;
+use rynth::engine::{empty_engine, AudioTopology, Engine};
 
+use rynth::low_frequency_oscillator::LowFrequencyOscillator;
+use rynth::oscillator::Oscillator;
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::Duration;
-use rynth::low_frequency_oscillator::LowFrequencyOscillator;
-use rynth::oscillator::Oscillator;
-
 
 fn create_testing_engine() -> Result<(Engine, AudioTopology)> {
     let sampling_rate = 48000;
@@ -16,9 +15,7 @@ fn create_testing_engine() -> Result<(Engine, AudioTopology)> {
 
     let (engine, mut topology) = empty_engine(sampling_rate, modulation_rate, 2);
 
-    let modulator_id = topology.add_modulator(
-        LowFrequencyOscillator::new(5.0, modulation_rate)
-    );
+    let modulator_id = topology.add_modulator(LowFrequencyOscillator::new(5.0, modulation_rate));
 
     let mut oscillator = Oscillator::new(200.0, sampling_rate);
     oscillator.level.value = 0.4;
@@ -30,7 +27,6 @@ fn create_testing_engine() -> Result<(Engine, AudioTopology)> {
 
     Ok((engine, topology))
 }
-
 
 fn main() -> Result<()> {
     let device = configure_device()?;
@@ -46,5 +42,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-
-

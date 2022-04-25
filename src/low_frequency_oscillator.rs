@@ -1,4 +1,4 @@
-use crate::basic::{ModulationComponent, Parameter, ModulatorId};
+use crate::basic::{ModulationComponent, ModulatorId, Parameter};
 
 pub struct LowFrequencyOscillator {
     pub id: Option<ModulatorId>,
@@ -8,7 +8,6 @@ pub struct LowFrequencyOscillator {
 }
 
 impl LowFrequencyOscillator {
-
     pub fn new(frequency: f32, sample_rate: u32) -> Self {
         Self {
             id: None,
@@ -20,7 +19,6 @@ impl LowFrequencyOscillator {
 }
 
 impl ModulationComponent for LowFrequencyOscillator {
-
     fn process_modulation(&mut self, sample: u64) {
         let omega = 2.0 * std::f32::consts::PI * self.frequency.value;
         let t = sample as f32 / self.sample_rate as f32;

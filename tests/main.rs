@@ -1,10 +1,15 @@
-use std::time::Duration;
 use anyhow::Result;
-use rynth::engine::{AudioTopology, empty_engine, Engine};
+use rynth::engine::{empty_engine, AudioTopology, Engine};
 use rynth::low_frequency_oscillator::LowFrequencyOscillator;
 use rynth::oscillator::Oscillator;
+use std::time::Duration;
 
-fn save_engine_result(engine: &mut Engine, topology: &mut AudioTopology, duration: Duration, path: &str) -> Result<()> {
+fn save_engine_result(
+    engine: &mut Engine,
+    topology: &mut AudioTopology,
+    duration: Duration,
+    path: &str,
+) -> Result<()> {
     let samples_per_call = 512;
     let channels = engine.channels;
     let sample_rate = engine.sampling_rate;
@@ -55,7 +60,12 @@ fn create_testing_engine() -> Result<(Engine, AudioTopology)> {
 #[test]
 fn sine_wave() -> Result<()> {
     let (mut engine, mut topology) = create_testing_engine()?;
-    save_engine_result(&mut engine, &mut topology, Duration::from_millis(10000), "sine.wav")?;
+    save_engine_result(
+        &mut engine,
+        &mut topology,
+        Duration::from_millis(10000),
+        "sine.wav",
+    )?;
 
     Ok(())
 }

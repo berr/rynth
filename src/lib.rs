@@ -1,10 +1,9 @@
 pub mod app;
 pub mod audio_loop;
-pub mod engine;
 pub mod basic;
-pub mod oscillator;
+pub mod engine;
 pub mod low_frequency_oscillator;
-
+pub mod oscillator;
 
 // pub struct Rynth {
 //

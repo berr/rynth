@@ -1,5 +1,5 @@
-use std::ops::Range;
 use crate::basic::{AudioComponent, AudioComponentId, ModulationComponent, Parameter};
+use std::ops::Range;
 
 pub struct Oscillator {
     pub id: Option<AudioComponentId>,
@@ -9,7 +9,6 @@ pub struct Oscillator {
 }
 
 impl Oscillator {
-
     pub fn new(frequency: f32, sample_rate: u32) -> Self {
         Self {
             id: None,
@@ -21,7 +20,6 @@ impl Oscillator {
 }
 
 impl AudioComponent for Oscillator {
-
     fn process_audio(&mut self, data: &mut [f32], sample_range: Range<u64>) {
         let omega = 2.0 * std::f32::consts::PI * self.frequency.final_value();
 

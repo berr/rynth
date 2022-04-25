@@ -10,13 +10,16 @@ pub type Message = ();
 pub type CommandReceiver = Receiver<Message>;
 pub type CommandSender = Sender<Message>;
 
-
-pub fn audio_loop(mut engine: Engine, mut topology: AudioTopology, device: cpal::Device, receiver: CommandReceiver) -> Result<(), anyhow::Error>
-{
-    let config = cpal::StreamConfig{
+pub fn audio_loop(
+    mut engine: Engine,
+    mut topology: AudioTopology,
+    device: cpal::Device,
+    receiver: CommandReceiver,
+) -> Result<(), anyhow::Error> {
+    let config = cpal::StreamConfig {
         channels: engine.channels,
         sample_rate: cpal::SampleRate(engine.sampling_rate),
-        buffer_size: cpal::BufferSize::Fixed(128)
+        buffer_size: cpal::BufferSize::Fixed(128),
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);

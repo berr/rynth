@@ -1,5 +1,5 @@
-use std::num::NonZeroUsize;
 use crate::basic::{AudioComponent, AudioComponentId, ModulationComponent, ModulatorId};
+use std::num::NonZeroUsize;
 
 pub type AudioComponents = Vec<Box<dyn AudioComponent + Send>>;
 pub type ModulationComponents = Vec<Box<dyn ModulationComponent + Send>>;
@@ -21,17 +21,19 @@ pub struct AudioTopology {
 }
 
 impl AudioTopology {
-
     pub fn new() -> Self {
-        Self{
+        Self {
             components: vec![],
             generated_components: 0,
             modulators: vec![],
-            generated_modulators: 0
+            generated_modulators: 0,
         }
     }
 
-    pub fn add_component<T: AudioComponent + Send + 'static>(&mut self, mut component: T) -> AudioComponentId {
+    pub fn add_component<T: AudioComponent + Send + 'static>(
+        &mut self,
+        mut component: T,
+    ) -> AudioComponentId {
         self.generated_components += 1;
         let id = AudioComponentId(NonZeroUsize::new(self.generated_components).unwrap());
         component.change_id(id);
@@ -41,7 +43,10 @@ impl AudioTopology {
         id
     }
 
-    pub fn add_modulator<T: ModulationComponent + Send + 'static>(&mut self, mut modulator: T) -> ModulatorId {
+    pub fn add_modulator<T: ModulationComponent + Send + 'static>(
+        &mut self,
+        mut modulator: T,
+    ) -> ModulatorId {
         self.generated_modulators += 1;
         let id = ModulatorId(NonZeroUsize::new(self.generated_modulators).unwrap());
         modulator.change_id(id);
@@ -50,7 +55,6 @@ impl AudioTopology {
 
         id
     }
-
 }
 
 impl Engine {
@@ -75,25 +79,36 @@ impl Engine {
             self.process_modulation(topology);
         }
 
-        let samples_before_next_modulation = (self.last_audio_sample_with_modulation + self.modulation_rate as u64 - start_sample) as usize;
+        let samples_before_next_modulation = (self.last_audio_sample_with_modulation
+            + self.modulation_rate as u64
+            - start_sample) as usize;
 
         if samples_before_next_modulation > total_samples {
             self.process_audio(topology, audio, total_samples);
             return;
         }
 
-        self.process_audio(topology, &mut audio[0..channels*samples_before_next_modulation], samples_before_next_modulation);
+        self.process_audio(
+            topology,
+            &mut audio[0..channels * samples_before_next_modulation],
+            samples_before_next_modulation,
+        );
         let mut samples_remaining = total_samples - samples_before_next_modulation;
-
 
         let mut current_sample_start_offset = samples_before_next_modulation;
         let audio_samples = self.modulation_rate as usize;
 
         while samples_remaining > 0 {
             self.process_modulation(topology);
-            let samples_to_process = samples_remaining.min(current_sample_start_offset + audio_samples);
+            let samples_to_process =
+                samples_remaining.min(current_sample_start_offset + audio_samples);
             let current_sample_end_offset = current_sample_start_offset + samples_to_process;
-            self.process_audio(topology, &mut audio[current_sample_start_offset*channels..current_sample_end_offset*channels], samples_to_process);
+            self.process_audio(
+                topology,
+                &mut audio
+                    [current_sample_start_offset * channels..current_sample_end_offset * channels],
+                samples_to_process,
+            );
             current_sample_start_offset = current_sample_end_offset;
 
             samples_remaining -= samples_to_process;
@@ -113,7 +128,12 @@ impl Engine {
         self.current_modulation_sample += 1;
     }
 
-    fn process_audio(&mut self, topology: &mut AudioTopology, audio: &mut [f32], total_samples: usize) {
+    fn process_audio(
+        &mut self,
+        topology: &mut AudioTopology,
+        audio: &mut [f32],
+        total_samples: usize,
+    ) {
         if total_samples == 0 {
             return;
         }
@@ -129,8 +149,11 @@ impl Engine {
     }
 }
 
-
-pub fn empty_engine(sampling_rate: u32, modulation_interval: u32, channels: u16) -> (Engine, AudioTopology) {
+pub fn empty_engine(
+    sampling_rate: u32,
+    modulation_interval: u32,
+    channels: u16,
+) -> (Engine, AudioTopology) {
     let engine = Engine::new(sampling_rate, modulation_interval, channels);
     let audio_topology = AudioTopology::new();
 

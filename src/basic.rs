@@ -7,7 +7,6 @@ pub struct AudioComponentId(pub NonZeroUsize);
 #[derive(Copy, Clone, PartialEq)]
 pub struct ModulatorId(pub NonZeroUsize);
 
-
 pub trait AudioComponent {
     fn process_audio(&mut self, data: &mut [f32], sample_range: Range<u64>);
     fn apply_modulations(&mut self, modulators: &[Box<dyn ModulationComponent + Send>]);
@@ -22,7 +21,6 @@ pub trait ModulationComponent {
     fn id(&self) -> Option<ModulatorId>;
     fn change_id(&mut self, new_id: ModulatorId);
 }
-
 
 pub struct Modulation {
     modulator: ModulatorId,
@@ -68,18 +66,19 @@ impl Parameter {
     pub fn apply_modulations(&mut self, modulators: &[Box<dyn ModulationComponent + Send>]) {
         let min = self.minimum_value;
         let max = self.maximum_value;
-        let map_modulation_domain = |m| (m+1.0) / 2.0 * (max - min) + min;
+        let map_modulation_domain = |m| (m + 1.0) / 2.0 * (max - min) + min;
 
         for modulator in modulators {
-            self.modulations.iter_mut()
+            self.modulations
+                .iter_mut()
                 .filter(|m| m.modulator == modulator.id().unwrap())
                 .for_each(|modulation| {
-                    modulation.result = map_modulation_domain(modulator.get_current_level()) * modulation.level;
+                    modulation.result =
+                        map_modulation_domain(modulator.get_current_level()) * modulation.level;
                 });
         }
 
         self.total_modulation = self.modulations.iter().map(|m| m.result).sum();
         self.final_value = self.value + self.total_modulation;
     }
-
 }
