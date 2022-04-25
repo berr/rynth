@@ -21,7 +21,7 @@ impl LowFrequencyOscillator {
 impl ModulationComponent for LowFrequencyOscillator {
     fn process_modulation(&mut self, sample: u64) {
         let omega = 2.0 * std::f32::consts::PI * self.frequency.value;
-        let t = sample as f32 / self.sample_rate as f32;
+        let t = (sample % self.sample_rate as u64) as f32 / self.sample_rate as f32;
         self.current_level = (t * omega).sin();
     }
 

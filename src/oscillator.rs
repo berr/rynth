@@ -24,7 +24,7 @@ impl AudioComponent for Oscillator {
         let omega = 2.0 * std::f32::consts::PI * self.frequency.final_value();
 
         for (frame, sample_index) in data.chunks_mut(2).zip(sample_range) {
-            let t = sample_index as f32 / self.sample_rate as f32;
+            let t = (sample_index % self.sample_rate as u64) as f32 / self.sample_rate as f32;
             let value = (t * omega).sin() * self.level.final_value();
 
             for sample_value in frame {

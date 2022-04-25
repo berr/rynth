@@ -11,17 +11,18 @@ use std::time::Duration;
 
 fn create_testing_engine() -> Result<(Engine, AudioTopology)> {
     let sampling_rate = 48000;
-    let modulation_rate = sampling_rate / 100;
+    let modulation_rate = 100;
+    let modulation_interval = sampling_rate / modulation_rate;
 
-    let (engine, mut topology) = empty_engine(sampling_rate, modulation_rate, 2);
+    let (engine, mut topology) = empty_engine(sampling_rate, modulation_interval, 2);
 
-    let modulator_id = topology.add_modulator(LowFrequencyOscillator::new(5.0, modulation_rate));
+    let modulator_id = topology.add_modulator(LowFrequencyOscillator::new(2.0, modulation_rate));
 
     let mut oscillator = Oscillator::new(200.0, sampling_rate);
     oscillator.level.value = 0.4;
-    // oscillator.level.add_modulation(modulator_id, 0.5);
+    oscillator.level.add_modulation(modulator_id, 0.5);
 
-    oscillator.frequency.add_modulation(modulator_id, 0.002);
+    // oscillator.frequency.add_modulation(modulator_id, 0.002);
 
     topology.add_component(oscillator);
 
