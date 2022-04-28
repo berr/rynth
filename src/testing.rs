@@ -1,6 +1,5 @@
 use crate::engine::{empty_engine, AudioTopology, Channels, Engine, ModulationRate, SamplingRate};
-use crate::low_frequency_oscillator::LowFrequencyOscillator;
-use crate::oscillator::Oscillator;
+use crate::components::{LowFrequencyOscillator, Oscillator};
 
 pub fn create_demo_engine() -> (Engine, AudioTopology) {
     let sampling_rate = SamplingRate(48000);
