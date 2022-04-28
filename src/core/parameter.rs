@@ -1,29 +1,5 @@
-use crate::engine::{AudioSampleIndex, ModulationSampleIndex};
-use std::num::NonZeroUsize;
-use std::ops::Range;
-
-// use derive_more::{Add, Sub}
-
-#[derive(Copy, Clone)]
-pub struct AudioComponentId(pub NonZeroUsize);
-
-#[derive(Copy, Clone, PartialEq)]
-pub struct ModulatorId(pub NonZeroUsize);
-
-pub trait AudioComponent {
-    fn process_audio(&mut self, data: &mut [f32], sample_range: Range<AudioSampleIndex>);
-    fn apply_modulations(&mut self, modulators: &[Box<dyn ModulationComponent + Send>], sample: AudioSampleIndex);
-
-    fn id(&self) -> Option<AudioComponentId>;
-    fn change_id(&mut self, new_id: AudioComponentId);
-}
-
-pub trait ModulationComponent {
-    fn process_modulation(&mut self, sample: ModulationSampleIndex);
-    fn get_current_level(&self) -> f32;
-    fn id(&self) -> Option<ModulatorId>;
-    fn change_id(&mut self, new_id: ModulatorId);
-}
+use crate::core::concepts::ModulatorId;
+use crate::core::traits::ModulationComponent;
 
 pub struct Modulation {
     modulator: ModulatorId,

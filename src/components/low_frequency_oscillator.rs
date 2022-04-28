@@ -1,5 +1,6 @@
-use crate::basic::{ModulationComponent, ModulatorId, Parameter};
-use crate::engine::{ModulationRate, ModulationSampleIndex};
+use crate::core::concepts::{ModulationRate, ModulationSampleIndex, ModulatorId};
+use crate::core::parameter::Parameter;
+use crate::core::traits::ModulationComponent;
 
 pub struct LowFrequencyOscillator {
     pub id: Option<ModulatorId>,

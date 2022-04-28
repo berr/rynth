@@ -1,5 +1,7 @@
-use crate::basic::{AudioComponent, AudioComponentId, ModulationComponent, Parameter};
-use crate::engine::{AudioSampleIndex, SamplingRate};
+use crate::core::concepts::{AudioComponentId, AudioSampleIndex, SamplingRate};
+use crate::core::parameter::Parameter;
+use crate::core::traits::AudioComponent;
+use crate::core::traits::ModulationComponent;
 use std::ops::Range;
 
 pub struct Oscillator {
@@ -31,7 +33,7 @@ impl AudioComponent for Oscillator {
 
         for (frame, sample_index) in data.chunks_mut(2).zip(range) {
             let sample_index = AudioSampleIndex(sample_index);
-            let t = (sample_index.0 as f32 % cycle_length)  / self.sampling_rate.0 as f32;
+            let t = (sample_index.0 as f32 % cycle_length) / self.sampling_rate.0 as f32;
             let value = (t * omega + self.phase_offset).sin() * self.level.final_value();
 
             for sample_value in frame {
@@ -40,16 +42,21 @@ impl AudioComponent for Oscillator {
         }
     }
 
-    fn apply_modulations(&mut self, modulators: &[Box<dyn ModulationComponent + Send>], sample: AudioSampleIndex) {
+    fn apply_modulations(
+        &mut self,
+        modulators: &[Box<dyn ModulationComponent + Send>],
+        sample: AudioSampleIndex,
+    ) {
         let old_cycle_length = self.sampling_rate.0 as f32 / self.frequency.final_value();
-        let old_t = (sample.0 as f32 % old_cycle_length)  / self.sampling_rate.0 as f32;
-        let old_domain =  2.0 * std::f32::consts::PI * self.frequency.final_value() * old_t + self.phase_offset;
+        let old_t = (sample.0 as f32 % old_cycle_length) / self.sampling_rate.0 as f32;
+        let old_domain =
+            2.0 * std::f32::consts::PI * self.frequency.final_value() * old_t + self.phase_offset;
 
         self.frequency.apply_modulations(modulators);
 
         let new_cycle_length = self.sampling_rate.0 as f32 / self.frequency.final_value();
-        let new_t = (sample.0 as f32 % new_cycle_length)  / self.sampling_rate.0 as f32;
-        let new_domain =  2.0 * std::f32::consts::PI * self.frequency.final_value() * new_t;
+        let new_t = (sample.0 as f32 % new_cycle_length) / self.sampling_rate.0 as f32;
+        let new_domain = 2.0 * std::f32::consts::PI * self.frequency.final_value() * new_t;
 
         self.phase_offset = old_domain - new_domain;
 

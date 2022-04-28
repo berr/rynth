@@ -1,5 +1,5 @@
 mod low_frequency_oscillator;
 mod oscillator;
 
-pub use crate::components::low_frequency_oscillator::*;
-pub use crate::components::oscillator::*;
+pub use low_frequency_oscillator::*;
+pub use oscillator::*;

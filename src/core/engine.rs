@@ -1,63 +1,12 @@
-use crate::basic::{AudioComponent, AudioComponentId, ModulationComponent, ModulatorId};
-use std::num::NonZeroUsize;
-
-use derive_more::{Add, AddAssign, Sub, SubAssign};
+use crate::core::concepts::{
+    AudioSampleDifference, AudioSampleIndex, Channels, ModulationRate, ModulationSampleIndex,
+    SamplingRate,
+};
+use crate::core::topology::AudioTopology;
+use crate::core::traits::{AudioComponent, ModulationComponent};
 
 pub type AudioComponents = Vec<Box<dyn AudioComponent + Send>>;
 pub type ModulationComponents = Vec<Box<dyn ModulationComponent + Send>>;
-
-#[derive(PartialEq, Copy, Clone)]
-pub struct AudioSampleIndex(pub u64);
-
-#[derive(Copy, Clone, Add, AddAssign, Sub, SubAssign, Ord, PartialOrd, Eq, PartialEq)]
-pub struct AudioSampleDifference(pub u64);
-
-impl std::ops::Add<AudioSampleDifference> for AudioSampleIndex {
-    type Output = Self;
-
-    fn add(self, rhs: AudioSampleDifference) -> Self::Output {
-        Self(self.0 + rhs.0)
-    }
-}
-
-impl std::ops::Mul<Channels> for AudioSampleDifference {
-    type Output = usize;
-
-    fn mul(self, rhs: Channels) -> Self::Output {
-        self.0 as usize * rhs.0 as usize
-    }
-}
-
-impl std::ops::Sub for AudioSampleIndex {
-    type Output = AudioSampleDifference;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        AudioSampleDifference(self.0 - rhs.0)
-    }
-}
-
-#[derive(PartialEq, Copy, Clone, derive_more::Add, derive_more::AddAssign)]
-pub struct ModulationSampleIndex(pub u64);
-
-#[derive(PartialEq, Copy, Clone, Add, Sub)]
-pub struct ModulationSampleDifference(pub u64);
-
-impl std::ops::Add<ModulationSampleDifference> for ModulationSampleIndex {
-    type Output = Self;
-
-    fn add(self, rhs: ModulationSampleDifference) -> Self::Output {
-        Self(self.0 + rhs.0)
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct Channels(pub u16);
-
-#[derive(Copy, Clone)]
-pub struct SamplingRate(pub u32);
-
-#[derive(Copy, Clone)]
-pub struct ModulationRate(pub u32);
 
 pub struct Engine {
     current_audio_sample: AudioSampleIndex,
@@ -67,50 +16,6 @@ pub struct Engine {
     pub modulation_rate: ModulationRate,
     pub modulation_period: AudioSampleDifference,
     pub channels: Channels,
-}
-
-pub struct AudioTopology {
-    components: AudioComponents,
-    generated_components: usize,
-    modulators: ModulationComponents,
-    generated_modulators: usize,
-}
-
-impl AudioTopology {
-    pub fn new() -> Self {
-        Self {
-            components: vec![],
-            generated_components: 0,
-            modulators: vec![],
-            generated_modulators: 0,
-        }
-    }
-
-    pub fn add_component<T: AudioComponent + Send + 'static>(
-        &mut self,
-        mut component: T,
-    ) -> AudioComponentId {
-        self.generated_components += 1;
-        let id = AudioComponentId(NonZeroUsize::new(self.generated_components).unwrap());
-        component.change_id(id);
-
-        self.components.push(Box::new(component));
-
-        id
-    }
-
-    pub fn add_modulator<T: ModulationComponent + Send + 'static>(
-        &mut self,
-        mut modulator: T,
-    ) -> ModulatorId {
-        self.generated_modulators += 1;
-        let id = ModulatorId(NonZeroUsize::new(self.generated_modulators).unwrap());
-        modulator.change_id(id);
-
-        self.modulators.push(Box::new(modulator));
-
-        id
-    }
 }
 
 impl Engine {
@@ -214,7 +119,7 @@ pub fn empty_engine(
     channels: Channels,
 ) -> (Engine, AudioTopology) {
     let engine = Engine::new(sampling_rate, modulation_rate, channels);
-    let audio_topology = AudioTopology::new();
+    let audio_topology = AudioTopology::default();
 
     (engine, audio_topology)
 }

@@ -1,7 +1,5 @@
 use anyhow::Result;
-use rynth::app::configure_device;
-use rynth::audio_loop::audio_loop;
-use rynth::testing::create_demo_engine;
+use rynth::app::{audio_loop, configure_device, create_demo_engine};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::Duration;

@@ -1,7 +1,7 @@
 use anyhow::Result;
+use rynth::app::create_demo_engine;
 use rynth::engine::{AudioTopology, Engine};
 use std::time::Duration;
-use rynth::testing::create_demo_engine;
 
 fn save_engine_result(
     engine: &mut Engine,

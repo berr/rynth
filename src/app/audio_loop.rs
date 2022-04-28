@@ -4,7 +4,7 @@ use std::sync::mpsc::Sender;
 use std::thread;
 use std::time::Duration;
 
-use crate::engine::{AudioTopology, Engine};
+use crate::core::{AudioTopology, Engine};
 
 pub type Message = ();
 pub type CommandReceiver = Receiver<Message>;
@@ -35,7 +35,7 @@ pub fn audio_loop(
 
     stream.play()?;
 
-    while let Ok(_) = receiver.recv() {
+    while receiver.recv().is_ok() {
         println!("Received something? wtf");
     }
 
