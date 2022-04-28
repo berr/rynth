@@ -1,6 +1,6 @@
 use crate::basic::{AudioComponent, AudioComponentId, ModulationComponent, Parameter};
 use crate::engine::{AudioSampleIndex, SamplingRate};
-use std::ops::{Range, Rem};
+use std::ops::Range;
 
 pub struct Oscillator {
     pub id: Option<AudioComponentId>,

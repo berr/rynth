@@ -32,7 +32,7 @@ pub struct Modulation {
 }
 
 pub struct Parameter {
-    pub value: f32,
+    value: f32,
     minimum_value: f32,
     maximum_value: f32,
     modulations: Vec<Modulation>,
@@ -42,6 +42,8 @@ pub struct Parameter {
 
 impl Parameter {
     pub fn new(value: f32, minimum_value: f32, maximum_value: f32) -> Self {
+        assert!(minimum_value <= value && value <= maximum_value);
+
         Self {
             value,
             minimum_value,
@@ -50,6 +52,15 @@ impl Parameter {
             total_modulation: 0.0,
             final_value: value,
         }
+    }
+
+    pub fn set_value(&mut self, value: f32) {
+        assert!(self.minimum_value <= value && value <= self.maximum_value);
+        self.value = value;
+    }
+
+    pub fn get_value(&self) -> f32 {
+        self.value
     }
 
     pub fn final_value(&self) -> f32 {
@@ -82,6 +93,7 @@ impl Parameter {
         }
 
         self.total_modulation = self.modulations.iter().map(|m| m.result).sum();
-        self.final_value = self.value + self.total_modulation;
+        let raw_final_value = self.value + self.total_modulation;
+        self.final_value = raw_final_value.clamp(min, max);
     }
 }
