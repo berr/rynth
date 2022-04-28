@@ -10,11 +10,12 @@ pub fn create_demo_engine() -> (Engine, AudioTopology) {
 
     let modulator_id = topology.add_modulator(LowFrequencyOscillator::new(2.0, modulation_rate));
 
-    let mut oscillator = Oscillator::new(200.0, sampling_rate);
-    oscillator.level.value = 0.4;
-    oscillator.level.add_modulation(modulator_id, 0.5);
+    let mut oscillator = Oscillator::new(500.0, sampling_rate);
 
-    // oscillator.frequency.add_modulation(modulator_id, 0.002);
+    // oscillator.level.value = 0.4;
+    // oscillator.level.add_modulation(modulator_id, 0.5);
+
+    oscillator.frequency.add_modulation(modulator_id, 0.01); // 200Hz range
 
     topology.add_component(oscillator);
 

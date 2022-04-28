@@ -12,7 +12,7 @@ pub struct ModulatorId(pub NonZeroUsize);
 
 pub trait AudioComponent {
     fn process_audio(&mut self, data: &mut [f32], sample_range: Range<AudioSampleIndex>);
-    fn apply_modulations(&mut self, modulators: &[Box<dyn ModulationComponent + Send>]);
+    fn apply_modulations(&mut self, modulators: &[Box<dyn ModulationComponent + Send>], sample: AudioSampleIndex);
 
     fn id(&self) -> Option<AudioComponentId>;
     fn change_id(&mut self, new_id: AudioComponentId);

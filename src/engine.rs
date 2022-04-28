@@ -180,7 +180,7 @@ impl Engine {
         }
 
         for c in &mut topology.components {
-            c.apply_modulations(topology.modulators.as_slice());
+            c.apply_modulations(topology.modulators.as_slice(), self.current_audio_sample);
         }
 
         self.last_audio_sample_with_modulation = self.current_audio_sample;
