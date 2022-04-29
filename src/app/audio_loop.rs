@@ -1,4 +1,5 @@
 use cpal::traits::{DeviceTrait, StreamTrait};
+use cpal::FrameCount;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::thread;
@@ -19,7 +20,7 @@ pub fn audio_loop(
     let config = cpal::StreamConfig {
         channels: engine.channels.0,
         sample_rate: cpal::SampleRate(engine.sampling_rate.0),
-        buffer_size: cpal::BufferSize::Fixed(128),
+        buffer_size: cpal::BufferSize::Fixed(engine.max_samples_per_step as FrameCount),
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);

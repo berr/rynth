@@ -1,13 +1,14 @@
 use crate::core::concepts::{
     AudioComponentId, AudioSampleIndex, ModulationSampleIndex, ModulatorId,
 };
+use crate::core::topology::DynModulationComponent;
 use std::ops::Range;
 
 pub trait AudioComponent {
     fn process_audio(&mut self, data: &mut [f32], sample_range: Range<AudioSampleIndex>);
     fn apply_modulations(
         &mut self,
-        modulators: &[Box<dyn ModulationComponent + Send>],
+        modulators: &[DynModulationComponent],
         sample: AudioSampleIndex,
     );
 

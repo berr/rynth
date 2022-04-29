@@ -1,6 +1,6 @@
 use anyhow::Result;
 use rynth::app::create_demo_engine;
-use rynth::engine::{AudioTopology, Engine};
+use rynth::core::{AudioTopology, Engine};
 use std::time::Duration;
 
 fn save_engine_result(
@@ -9,7 +9,7 @@ fn save_engine_result(
     duration: Duration,
     path: &str,
 ) -> Result<()> {
-    let samples_per_call = 512;
+    let samples_per_call = engine.max_samples_per_step;
     let channels = engine.channels;
     let sampling_rate = engine.sampling_rate;
     let test_samples = (duration.as_secs_f32() * sampling_rate.0 as f32) as usize;
@@ -41,13 +41,13 @@ fn save_engine_result(
 }
 
 #[test]
-fn sine_wave() -> Result<()> {
+fn demo_config() -> Result<()> {
     let (mut engine, mut topology) = create_demo_engine();
     save_engine_result(
         &mut engine,
         &mut topology,
         Duration::from_millis(10000),
-        "sine.wav",
+        "demo.wav",
     )?;
 
     Ok(())

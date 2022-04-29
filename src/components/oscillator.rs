@@ -31,14 +31,10 @@ impl AudioComponent for Oscillator {
 
         let range = sample_range.start.0..sample_range.end.0;
 
-        for (frame, sample_index) in data.chunks_mut(2).zip(range) {
+        for (sample, sample_index) in data.iter_mut().zip(range) {
             let sample_index = AudioSampleIndex(sample_index);
             let t = (sample_index.0 as f32 % cycle_length) / self.sampling_rate.0 as f32;
-            let value = (t * omega + self.phase_offset).sin() * self.level.final_value();
-
-            for sample_value in frame {
-                *sample_value = value;
-            }
+            *sample = (t * omega + self.phase_offset).sin() * self.level.final_value();
         }
     }
 

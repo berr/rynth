@@ -2,28 +2,29 @@ use crate::core::concepts::{AudioComponentId, ModulatorId};
 use crate::core::traits::{AudioComponent, ModulationComponent};
 use std::num::NonZeroUsize;
 
-pub type AudioComponents = Vec<Box<dyn AudioComponent + Send>>;
-pub type ModulationComponents = Vec<Box<dyn ModulationComponent + Send>>;
+pub type DynAudioComponent = Box<dyn AudioComponent + Send>;
+pub type AudioComponents = Vec<DynAudioComponent>;
+pub type DynModulationComponent = Box<dyn ModulationComponent + Send>;
+pub type ModulationComponents = Vec<DynModulationComponent>;
 
 pub struct AudioTopology {
+    pub processing_buffer: Vec<f32>,
     pub components: AudioComponents,
-    pub modulators: ModulationComponents,
     generated_components: usize,
+    pub modulators: ModulationComponents,
     generated_modulators: usize,
 }
 
-impl Default for AudioTopology {
-    fn default() -> Self {
+impl AudioTopology {
+    pub fn new(max_samples_per_step: usize) -> Self {
         Self {
+            processing_buffer: vec![0.0; max_samples_per_step],
             components: vec![],
             generated_components: 0,
             modulators: vec![],
             generated_modulators: 0,
         }
     }
-}
-
-impl AudioTopology {
 
     pub fn add_component<T: AudioComponent + Send + 'static>(
         &mut self,
