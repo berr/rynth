@@ -1,11 +1,10 @@
-use crate::core::concepts::{AudioComponentId, AudioSampleIndex, SamplingRate};
+use crate::core::concepts::{AudioSampleIndex, SamplingRate};
 use crate::core::parameter::Parameter;
 use crate::core::traits::AudioComponent;
-use crate::core::traits::ModulationComponent;
+use crate::core::ModulationComponentsStore;
 use std::ops::Range;
 
 pub struct Oscillator {
-    pub id: Option<AudioComponentId>,
     pub frequency: Parameter,
     pub phase_offset: f32,
     pub level: Parameter,
@@ -15,7 +14,6 @@ pub struct Oscillator {
 impl Oscillator {
     pub fn new(frequency: f32, sampling_rate: SamplingRate) -> Self {
         Self {
-            id: None,
             frequency: Parameter::new(frequency, 0.0, 20000.0),
             phase_offset: 0.0,
             level: Parameter::new(1.0, 0.0, 1.0),
@@ -40,7 +38,7 @@ impl AudioComponent for Oscillator {
 
     fn apply_modulations(
         &mut self,
-        modulators: &[Box<dyn ModulationComponent + Send>],
+        modulators: &ModulationComponentsStore,
         sample: AudioSampleIndex,
     ) {
         let old_cycle_length = self.sampling_rate.0 as f32 / self.frequency.final_value();
@@ -57,13 +55,5 @@ impl AudioComponent for Oscillator {
         self.phase_offset = old_domain - new_domain;
 
         self.level.apply_modulations(modulators);
-    }
-
-    fn id(&self) -> Option<AudioComponentId> {
-        self.id
-    }
-
-    fn change_id(&mut self, new_id: AudioComponentId) {
-        self.id = Some(new_id);
     }
 }

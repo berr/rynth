@@ -1,5 +1,3 @@
-use std::num::NonZeroUsize;
-
 use derive_more::{Add, AddAssign, Sub, SubAssign};
 
 #[derive(PartialEq, Copy, Clone)]
@@ -55,8 +53,8 @@ pub struct SamplingRate(pub u32);
 #[derive(Copy, Clone)]
 pub struct ModulationRate(pub u32);
 
-#[derive(Copy, Clone)]
-pub struct AudioComponentId(pub NonZeroUsize);
-
-#[derive(Copy, Clone, PartialEq)]
-pub struct ModulatorId(pub NonZeroUsize);
+// #[derive(Copy, Clone)]
+// pub struct AudioComponentId(pub NonZeroUsize);
+//
+// #[derive(Copy, Clone, PartialEq)]
+// pub struct ModulatorId(pub NonZeroUsize);

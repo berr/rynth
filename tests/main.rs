@@ -1,53 +1,113 @@
+mod helpers;
+mod resource_db;
+
 use anyhow::Result;
-use rynth::app::create_demo_engine;
-use rynth::core::{AudioTopology, Engine};
+use helpers::assert_engine_produces_same_output;
+use resource_db::get_resource;
+use rynth::components::{LowFrequencyOscillator, Oscillator};
+use rynth::core::{empty_engine, AudioTopology, Channels, Engine, ModulationRate, SamplingRate};
 use std::time::Duration;
 
-fn save_engine_result(
-    engine: &mut Engine,
-    topology: &mut AudioTopology,
-    duration: Duration,
-    path: &str,
-) -> Result<()> {
-    let samples_per_call = engine.max_samples_per_step;
-    let channels = engine.channels;
-    let sampling_rate = engine.sampling_rate;
-    let test_samples = (duration.as_secs_f32() * sampling_rate.0 as f32) as usize;
-    let mut buffer = vec![0.0; samples_per_call * channels.0 as usize];
+fn empty_mono_engine() -> (Engine, AudioTopology) {
+    empty_engine(SamplingRate(48000), ModulationRate(100), 128, Channels(1))
+}
 
-    let spec = hound::WavSpec {
-        channels: channels.0,
-        sample_rate: sampling_rate.0,
-        bits_per_sample: 32,
-        sample_format: hound::SampleFormat::Float,
-    };
-    let mut writer = hound::WavWriter::create(path, spec)?;
+#[test]
+fn simple_oscillator() -> Result<()> {
+    let (mut engine, mut topology) = empty_mono_engine();
 
-    let mut current_sample = 0;
-    while current_sample < test_samples {
-        let samples_in_loop = samples_per_call.min(test_samples - current_sample);
-        let samples_in_buffer = samples_in_loop * channels.0 as usize;
-        let buffer_slice = &mut buffer.as_mut_slice()[0..samples_in_buffer];
+    let mut oscillator = Oscillator::new(400.0, engine.spec.sampling_rate);
+    oscillator.level.set_value(0.75);
+    topology.add_component(oscillator);
 
-        engine.advance(topology, buffer_slice);
-        for s in buffer_slice.iter() {
-            writer.write_sample(*s)?;
-        }
-
-        current_sample += samples_in_loop;
-    }
+    assert_engine_produces_same_output(
+        &mut engine,
+        &mut topology,
+        Duration::from_millis(5000),
+        &get_resource("sine.wav"),
+    )?;
 
     Ok(())
 }
 
 #[test]
-fn demo_config() -> Result<()> {
-    let (mut engine, mut topology) = create_demo_engine();
-    save_engine_result(
+fn oscillator_amplitude_modulation() -> Result<()> {
+    let (mut engine, mut topology) = empty_mono_engine();
+
+    let modulator_id = topology.add_modulator(LowFrequencyOscillator::new(
+        2.0,
+        engine.spec.modulation_rate,
+    ));
+
+    let mut oscillator = Oscillator::new(500.0, engine.spec.sampling_rate);
+
+    oscillator.level.set_value(0.3);
+    oscillator.level.add_modulation(modulator_id, 0.2);
+
+    topology.add_component(oscillator);
+
+    assert_engine_produces_same_output(
         &mut engine,
         &mut topology,
-        Duration::from_millis(10000),
-        "demo.wav",
+        Duration::from_millis(5000),
+        &get_resource("sine_amplitude_modulation.wav"),
+    )?;
+
+    Ok(())
+}
+
+#[test]
+fn oscillator_frequency_modulation() -> Result<()> {
+    let (mut engine, mut topology) = empty_mono_engine();
+
+    let modulator_id = topology.add_modulator(LowFrequencyOscillator::new(
+        10.0,
+        engine.spec.modulation_rate,
+    ));
+
+    let mut oscillator = Oscillator::new(1500.0, engine.spec.sampling_rate);
+
+    oscillator.level.set_value(0.75);
+    oscillator.frequency.add_modulation(modulator_id, 0.05); // 1000Hz range
+
+    topology.add_component(oscillator);
+
+    assert_engine_produces_same_output(
+        &mut engine,
+        &mut topology,
+        Duration::from_millis(5000),
+        &get_resource("sine_frequency_modulation.wav"),
+    )?;
+
+    Ok(())
+}
+
+#[test]
+fn oscillator_frequency_and_amplitude_modulation() -> Result<()> {
+    let (mut engine, mut topology) = empty_mono_engine();
+
+    let modulator1_id = topology.add_modulator(LowFrequencyOscillator::new(
+        2.0,
+        engine.spec.modulation_rate,
+    ));
+    let modulator2_id = topology.add_modulator(LowFrequencyOscillator::new(
+        10.0,
+        engine.spec.modulation_rate,
+    ));
+
+    let mut oscillator = Oscillator::new(500.0, engine.spec.sampling_rate);
+
+    oscillator.level.set_value(0.3);
+    oscillator.level.add_modulation(modulator1_id, 0.2);
+    oscillator.frequency.add_modulation(modulator2_id, 0.01); // 200Hz range
+
+    topology.add_component(oscillator);
+
+    assert_engine_produces_same_output(
+        &mut engine,
+        &mut topology,
+        Duration::from_millis(5000),
+        &get_resource("sine_frequency_and_amplitude_modulation.wav"),
     )?;
 
     Ok(())

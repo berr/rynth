@@ -18,9 +18,9 @@ pub fn audio_loop(
     receiver: CommandReceiver,
 ) -> Result<(), anyhow::Error> {
     let config = cpal::StreamConfig {
-        channels: engine.channels.0,
-        sample_rate: cpal::SampleRate(engine.sampling_rate.0),
-        buffer_size: cpal::BufferSize::Fixed(engine.max_samples_per_step as FrameCount),
+        channels: engine.spec.channels.0,
+        sample_rate: cpal::SampleRate(engine.spec.sampling_rate.0),
+        buffer_size: cpal::BufferSize::Fixed(engine.spec.max_samples_per_step as FrameCount),
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);

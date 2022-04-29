@@ -1,4 +1,5 @@
 pub mod buffers;
+pub mod component_store;
 pub mod concepts;
 pub mod engine;
 pub mod parameter;

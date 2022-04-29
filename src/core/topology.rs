@@ -1,54 +1,55 @@
-use crate::core::concepts::{AudioComponentId, ModulatorId};
+use crate::core::component_store::{ComponentId, ComponentsStore};
 use crate::core::traits::{AudioComponent, ModulationComponent};
-use std::num::NonZeroUsize;
+use crate::core::EngineSpec;
 
-pub type DynAudioComponent = Box<dyn AudioComponent + Send>;
+pub type DynAudioComponent = Box<dyn AudioComponent>;
 pub type AudioComponents = Vec<DynAudioComponent>;
-pub type DynModulationComponent = Box<dyn ModulationComponent + Send>;
+pub type DynModulationComponent = Box<dyn ModulationComponent>;
 pub type ModulationComponents = Vec<DynModulationComponent>;
 
+#[derive(PartialEq, Copy, Clone)]
+pub struct ModulationComponentIdTag;
+pub type ModulationComponentId = ComponentId<ModulationComponentIdTag>;
+
+#[derive(PartialEq, Copy, Clone)]
+pub struct AudioComponentIdTag;
+pub type AudioComponentId = ComponentId<AudioComponentIdTag>;
+
+pub type AudioComponentsStore = ComponentsStore<dyn AudioComponent, AudioComponentIdTag>;
+pub type ModulationComponentsStore =
+    ComponentsStore<dyn ModulationComponent, ModulationComponentIdTag>;
+
 pub struct AudioTopology {
+    pub spec: EngineSpec,
     pub processing_buffer: Vec<f32>,
-    pub components: AudioComponents,
-    generated_components: usize,
-    pub modulators: ModulationComponents,
-    generated_modulators: usize,
+    pub audio_components: AudioComponentsStore,
+    pub modulation_components: ModulationComponentsStore,
 }
 
 impl AudioTopology {
-    pub fn new(max_samples_per_step: usize) -> Self {
+    pub fn new(spec: EngineSpec) -> Self {
         Self {
-            processing_buffer: vec![0.0; max_samples_per_step],
-            components: vec![],
-            generated_components: 0,
-            modulators: vec![],
-            generated_modulators: 0,
+            spec,
+            processing_buffer: vec![0.0; spec.max_samples_per_step],
+            audio_components: ComponentsStore::default(),
+            modulation_components: ComponentsStore::default(),
         }
     }
 
-    pub fn add_component<T: AudioComponent + Send + 'static>(
-        &mut self,
-        mut component: T,
-    ) -> AudioComponentId {
-        self.generated_components += 1;
-        let id = AudioComponentId(NonZeroUsize::new(self.generated_components).unwrap());
-        component.change_id(id);
-
-        self.components.push(Box::new(component));
-
-        id
+    pub fn add_component<T: 'static + AudioComponent>(&mut self, component: T) -> AudioComponentId {
+        let boxed = Box::new(component);
+        self.audio_components.add_component(boxed)
     }
 
-    pub fn add_modulator<T: ModulationComponent + Send + 'static>(
+    pub fn add_modulator<T: 'static + ModulationComponent>(
         &mut self,
-        mut modulator: T,
-    ) -> ModulatorId {
-        self.generated_modulators += 1;
-        let id = ModulatorId(NonZeroUsize::new(self.generated_modulators).unwrap());
-        modulator.change_id(id);
+        modulator: T,
+    ) -> ModulationComponentId {
+        let boxed = Box::new(modulator);
+        self.modulation_components.add_component(boxed)
+    }
 
-        self.modulators.push(Box::new(modulator));
-
-        id
+    pub fn get_modulator(&self, id: ModulationComponentId) -> Option<&dyn ModulationComponent> {
+        self.modulation_components.get_component(id)
     }
 }
